@@ -2,8 +2,7 @@ import numpy as np
 
 
 class DescentUnconstrainted:
-    def __init__(self, fn_objective, fn_objective_gradient, 
-        fn_objective_hessian = None, fn_objective_domain_indicator = None):
+    def __init__(self, fn_objective, fn_objective_gradient, fn_objective_domain_indicator = None):
         
         self.objective = fn_objective
         self.objective_gradient = fn_objective_gradient
@@ -42,13 +41,70 @@ class DescentUnconstrainted:
     def _l2_norm(self, vec):
         return (sum(vec**2))**0.5
     
-    def run_gradient_descent_with_backtracking_line_search(self, starting_pt, tolerance = 0.01):
+    def _descent_direction_gradient_descent_L2(self, eval_pt):
+        return self.objective_gradient(eval_pt) * (-1)
+
+    def _descent_direction_steepest_descent_L1(self, eval_pt):
+        gradient = self.objective_gradient(eval_pt)
+        max_index, max_abs_val = (None, 0)
+        for i, val in enumerate(gradient):
+            abs_val = abs(val)
+            if abs_val > max_abs_val:
+                max_index = i
+                max_abs_val = abs_val
+        direction_step = np.zeros(len(gradient))
+        direction_step[max_index] = gradient[max_index] * (-1)
+        return direction_step
+
+    def _descent_direction_steepest_descent_quadratic_norm(self, eval_pt, inv_quadratic_norm_matrix):
+        gradient = self.objective_gradient(eval_pt)
+        direction_step = np.matmul(inv_quadratic_norm_matrix, gradient) * (-1)
+        return direction_step
+
+    def run_gradient_descent_with_backtracking_line_search(self, starting_pt, tolerance = 0.001):
         self.minimizing_sequence = [starting_pt]
         self.value_sequence = [self.objective(starting_pt)]
         num_iter = 0
         while True:
             eval_pt = self.minimizing_sequence[-1]
-            descent_direction = self.objective_gradient(eval_pt) * (-1)
+            descent_direction = self._descent_direction_gradient_descent_L2(eval_pt)
+            if self._l2_norm(descent_direction) < tolerance:
+                break
+            descent_step_size = self._backtracking_line_search(eval_pt, descent_direction, 
+                                    a_slope_flatter_ratio = 0.2, b_step_shorten_ratio = 0.5)
+            next_point = eval_pt + descent_direction * descent_step_size
+            self.minimizing_sequence.append(next_point)
+            self.value_sequence.append(self.objective(next_point))
+            num_iter += 1
+
+        print("iteration: ", num_iter)
+    
+    def run_steepest_descent_L1_with_backtracking_line_search(self, starting_pt, tolerance = 0.001):
+        self.minimizing_sequence = [starting_pt]
+        self.value_sequence = [self.objective(starting_pt)]
+        num_iter = 0
+        while True:
+            eval_pt = self.minimizing_sequence[-1]
+            descent_direction = self._descent_direction_steepest_descent_L1(eval_pt)
+            if self._l2_norm(descent_direction) < tolerance:
+                break
+            descent_step_size = self._backtracking_line_search(eval_pt, descent_direction, 
+                                    a_slope_flatter_ratio = 0.2, b_step_shorten_ratio = 0.5)
+            next_point = eval_pt + descent_direction * descent_step_size
+            self.minimizing_sequence.append(next_point)
+            self.value_sequence.append(self.objective(next_point))
+            num_iter += 1
+
+        print("iteration: ", num_iter)
+
+    def run_steepest_descent_quadratic_norm_with_backtracking_line_search(self, starting_pt, quadratic_norm_matrix, tolerance = 0.001):
+        self.minimizing_sequence = [starting_pt]
+        self.value_sequence = [self.objective(starting_pt)]
+        inv_quadratic_norm_matrix = np.linalg.inv(quadratic_norm_matrix)
+        num_iter = 0
+        while True:
+            eval_pt = self.minimizing_sequence[-1]
+            descent_direction = self._descent_direction_steepest_descent_quadratic_norm(eval_pt, inv_quadratic_norm_matrix)
             if self._l2_norm(descent_direction) < tolerance:
                 break
             descent_step_size = self._backtracking_line_search(eval_pt, descent_direction, 
@@ -75,7 +131,7 @@ class DescentUnconstrainted:
 
 
 if __name__ == "__main__":
-    
+
     #test 1
     def test_objective1(vec_2dim, gamma = 2):
         val = 0.5 * (vec_2dim[0]**2 + gamma * (vec_2dim[1]**2))
@@ -87,24 +143,41 @@ if __name__ == "__main__":
 
 
     test_descent_inst = DescentUnconstrainted(test_objective1, test_objective1_gradient)
-    test_descent_inst.run_gradient_descent_with_backtracking_line_search(np.array([13,22.3]))
+    test_descent_inst.run_gradient_descent_with_backtracking_line_search(np.array([5, 12]), tolerance=0.1)
     print(test_descent_inst.get_minimizing_sequence())
     print(test_descent_inst.get_minimizing_function_value_sequence())
 
+    test_descent_inst.run_steepest_descent_L1_with_backtracking_line_search(np.array([5, 12]), tolerance=0.1)
+    print(test_descent_inst.get_minimizing_sequence())
+    print(test_descent_inst.get_minimizing_function_value_sequence())
+
+
     #test 2
-    def test_objective2(vec_2dim, gamma = 2):
+    def test_objective2(vec_2dim):
         val = np.exp(vec_2dim[0] + 3 * vec_2dim[1] - 0.1) + np.exp(vec_2dim[0] - 3 * vec_2dim[1] - 0.1) + np.exp(-vec_2dim[0] - 0.1)
         return np.array(val)
 
-    def test_objective2_gradient(vec_2dim, gamma = 2):
+    def test_objective2_gradient(vec_2dim):
         grad = (np.exp(vec_2dim[0] + 3 * vec_2dim[1] - 0.1) + np.exp(vec_2dim[0] - 3 * vec_2dim[1] - 0.1) - np.exp(-vec_2dim[0] - 0.1),
                 3 * np.exp(vec_2dim[0] + 3 * vec_2dim[1] - 0.1) - 3 * np.exp(vec_2dim[0] - 3 * vec_2dim[1] - 0.1))
         return np.array(grad)
 
 
     test_descent_inst2 = DescentUnconstrainted(test_objective2, test_objective2_gradient)
-    test_descent_inst2.run_gradient_descent_with_backtracking_line_search(np.array([9, 20]))
+    test_descent_inst2.run_gradient_descent_with_backtracking_line_search(np.array([5, 12]))
+    print(test_descent_inst2.get_minimizing_sequence())
+    print(test_descent_inst2.get_minimizing_function_value_sequence())
+    
+    test_descent_inst2.run_steepest_descent_L1_with_backtracking_line_search(np.array([5, 12]), tolerance=0.1)
     print(test_descent_inst2.get_minimizing_sequence())
     print(test_descent_inst2.get_minimizing_function_value_sequence())
 
+    norm_mat_1 = np.array([[2,0], [0,8]])
+    test_descent_inst2.run_steepest_descent_quadratic_norm_with_backtracking_line_search(np.array([5, 12]), norm_mat_1, tolerance=0.1)
+    print(test_descent_inst2.get_minimizing_sequence())
+    print(test_descent_inst2.get_minimizing_function_value_sequence())
 
+    norm_mat_2 = np.array([[8,0], [0,2]])
+    test_descent_inst2.run_steepest_descent_quadratic_norm_with_backtracking_line_search(np.array([5, 12]), norm_mat_2, tolerance=0.1)
+    print(test_descent_inst2.get_minimizing_sequence())
+    print(test_descent_inst2.get_minimizing_function_value_sequence())
