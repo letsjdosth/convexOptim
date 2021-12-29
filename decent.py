@@ -1,7 +1,8 @@
 import numpy as np
+import scipy
 
 
-class DescentUnconstrainted:
+class DescentUnconstrained:
     def __init__(self, fn_objective, fn_objective_gradient, fn_objective_domain_indicator = None):
         
         self.objective = fn_objective
@@ -10,6 +11,9 @@ class DescentUnconstrainted:
             self.objective_domain_indicator = fn_objective_domain_indicator
         else:
             self.objective_domain_indicator = self._Rn_domain_indicator
+
+        self.minimizing_sequence = []
+        self.value_sequence = []
 
     def _Rn_domain_indicator(self, eval_pt):
         return True
@@ -142,7 +146,7 @@ if __name__ == "__main__":
         return np.array(grad)
 
 
-    test_descent_inst = DescentUnconstrainted(test_objective1, test_objective1_gradient)
+    test_descent_inst = DescentUnconstrained(test_objective1, test_objective1_gradient)
     test_descent_inst.run_gradient_descent_with_backtracking_line_search(np.array([5, 12]), tolerance=0.1)
     print(test_descent_inst.get_minimizing_sequence())
     print(test_descent_inst.get_minimizing_function_value_sequence())
@@ -163,7 +167,7 @@ if __name__ == "__main__":
         return np.array(grad)
 
 
-    test_descent_inst2 = DescentUnconstrainted(test_objective2, test_objective2_gradient)
+    test_descent_inst2 = DescentUnconstrained(test_objective2, test_objective2_gradient)
     test_descent_inst2.run_gradient_descent_with_backtracking_line_search(np.array([5, 12]))
     print(test_descent_inst2.get_minimizing_sequence())
     print(test_descent_inst2.get_minimizing_function_value_sequence())
