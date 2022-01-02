@@ -65,7 +65,8 @@ class DescentUnconstrained:
         direction_step = np.matmul(inv_quadratic_norm_matrix, gradient) * (-1)
         return direction_step
 
-    def run_gradient_descent_with_backtracking_line_search(self, starting_pt, tolerance = 0.001):
+    def run_gradient_descent_with_backtracking_line_search(self, starting_pt, tolerance = 0.001,
+                                                        a_slope_flatter_ratio = 0.2, b_step_shorten_ratio = 0.5):
         self.minimizing_sequence = [starting_pt]
         self.value_sequence = [self.objective(starting_pt)]
         num_iter = 0
@@ -75,7 +76,7 @@ class DescentUnconstrained:
             if self._l2_norm(descent_direction) < tolerance:
                 break
             descent_step_size = self._backtracking_line_search(eval_pt, descent_direction, 
-                                    a_slope_flatter_ratio = 0.2, b_step_shorten_ratio = 0.5)
+                                    a_slope_flatter_ratio, b_step_shorten_ratio)
             next_point = eval_pt + descent_direction * descent_step_size
             self.minimizing_sequence.append(next_point)
             self.value_sequence.append(self.objective(next_point))
@@ -83,7 +84,8 @@ class DescentUnconstrained:
 
         print("iteration: ", num_iter)
     
-    def run_steepest_descent_L1_with_backtracking_line_search(self, starting_pt, tolerance = 0.001):
+    def run_steepest_descent_L1_with_backtracking_line_search(self, starting_pt, tolerance = 0.001,
+                                                            a_slope_flatter_ratio = 0.2, b_step_shorten_ratio = 0.5):
         self.minimizing_sequence = [starting_pt]
         self.value_sequence = [self.objective(starting_pt)]
         num_iter = 0
@@ -93,7 +95,7 @@ class DescentUnconstrained:
             if self._l2_norm(descent_direction) < tolerance:
                 break
             descent_step_size = self._backtracking_line_search(eval_pt, descent_direction, 
-                                    a_slope_flatter_ratio = 0.2, b_step_shorten_ratio = 0.5)
+                                    a_slope_flatter_ratio, b_step_shorten_ratio)
             next_point = eval_pt + descent_direction * descent_step_size
             self.minimizing_sequence.append(next_point)
             self.value_sequence.append(self.objective(next_point))
@@ -101,7 +103,8 @@ class DescentUnconstrained:
 
         print("iteration: ", num_iter)
 
-    def run_steepest_descent_quadratic_norm_with_backtracking_line_search(self, starting_pt, quadratic_norm_matrix, tolerance = 0.001):
+    def run_steepest_descent_quadratic_norm_with_backtracking_line_search(self, starting_pt, quadratic_norm_matrix, tolerance = 0.001,
+                                                                        a_slope_flatter_ratio = 0.2, b_step_shorten_ratio = 0.5):
         self.minimizing_sequence = [starting_pt]
         self.value_sequence = [self.objective(starting_pt)]
         inv_quadratic_norm_matrix = np.linalg.inv(quadratic_norm_matrix)
@@ -112,7 +115,7 @@ class DescentUnconstrained:
             if self._l2_norm(descent_direction) < tolerance:
                 break
             descent_step_size = self._backtracking_line_search(eval_pt, descent_direction, 
-                                    a_slope_flatter_ratio = 0.2, b_step_shorten_ratio = 0.5)
+                                    a_slope_flatter_ratio, b_step_shorten_ratio)
             next_point = eval_pt + descent_direction * descent_step_size
             self.minimizing_sequence.append(next_point)
             self.value_sequence.append(self.objective(next_point))

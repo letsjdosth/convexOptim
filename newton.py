@@ -69,7 +69,9 @@ class NewtonUnconstrained:
         newton_decrement = np.matmul(np.transpose(neg_gradient), direction_newton_step)
         return (direction_newton_step, newton_decrement)
 
-    def run_newton_with_backtracking_line_search(self, starting_pt, tolerance = 0.001, method="cholesky"):
+    def run_newton_with_backtracking_line_search(self, starting_pt, tolerance = 0.001, 
+                                                method="cholesky", 
+                                                a_slope_flatter_ratio = 0.2, b_step_shorten_ratio = 0.5):
         #method : cholesky, pinv (if hessian is singular)
         self.minimizing_sequence = [starting_pt]
         self.value_sequence = [self.objective(starting_pt)]
@@ -89,7 +91,7 @@ class NewtonUnconstrained:
                 break
 
             descent_step_size = self._backtracking_line_search(eval_pt, descent_direction, 
-                                    a_slope_flatter_ratio = 0.2, b_step_shorten_ratio = 0.5)
+                                    a_slope_flatter_ratio, b_step_shorten_ratio)
             next_point = eval_pt + descent_direction * descent_step_size
             self.minimizing_sequence.append(next_point)
             self.value_sequence.append(self.objective(next_point))
