@@ -34,3 +34,21 @@ Reference: Boyd, S., Boyd, S. P., & Vandenberghe, L. (2004). Convex optimization
 - NewtonAffineConstrainedInfeasibleStart.run_newton_with_infeasible_starting_point
   - Newton method for equality constraints, with the backtracking line search and any starting point (using Cholesky decomposition / inverse / pseudo inverse)
   - ref: BBV chap 10.3-4. Equality constrained minimization: Infeasible start Newton method, Implementation
+
+## Inequality Constrained Minimization
+
+### barrier.py
+
+- NewtonIneqConstrainedBarrier.outer_run_barrier_method_with_feasible_starting_point
+  - Newton method for inequality constraints and affine equality constrains, with the backtracking line search and any starting point (using Cholesky decomposition / inverse / pseudo inverse)
+  - ref: BBV chap 11.2-3. Interior-point methods: logarithmic barrier function and central path, the barrier method
+
+- NewtonIneqConstrainedBarrier.outer_run_barrier_method_with_feasible_starting_point
+  - Newton method for inequality constraints and affine equality constrains, with the backtracking line search and any starting point (using Cholesky decomposition / inverse / pseudo inverse)
+  - ref: BBV chap 11.2-3. Interior-point methods: logarithmic barrier function and central path, the barrier method
+  
+- Phase1.run_phase1
+- Phase1.run_phase1_to_central_path
+  - Phase 1 method to find a feasible point under given inequality conditions
+  - (11.19) / (11.21) for chapter 11.4.1
+  - ref: BBV chap 11.4. Interior-point methods: Feasibility and Phase 1 methods
